@@ -291,6 +291,7 @@ class GoogleLargeLanguageModel(LargeLanguageModel):
         include_thoughts = model_parameters.get("include_thoughts", None)
         thinking_budget = model_parameters.get("thinking_budget", None)
         thinking_mode = model_parameters.get("thinking_mode", None)
+        thinking_level = model_parameters.get("thinking_level", None)
 
         # Must be explicitly handled here, where the three states True, False, and None each have specific meanings.
         if thinking_mode is None:
@@ -304,8 +305,18 @@ class GoogleLargeLanguageModel(LargeLanguageModel):
             ):
                 thinking_budget = -1
 
+        if isinstance(thinking_level, str):
+            if thinking_level in ["Low"]:
+                thinking_level = types.ThinkingLevel.LOW
+            elif thinking_level in ["High"]:
+                thinking_level = types.ThinkingLevel.HIGH
+        if not isinstance(thinking_level, types.ThinkingLevel):
+            thinking_level = None
+
         config.thinking_config = types.ThinkingConfig(
-            include_thoughts=include_thoughts, thinking_budget=thinking_budget
+            include_thoughts=include_thoughts,
+            thinking_budget=thinking_budget,
+            thinking_level=thinking_level,
         )
 
     @staticmethod
@@ -605,6 +616,7 @@ class GoogleLargeLanguageModel(LargeLanguageModel):
         credentials: dict,
         response: Iterator[types.GenerateContentResponse],
         prompt_messages: list[PromptMessage],
+        genai_client: genai.Client,
     ) -> Generator[LLMResultChunk]:
         """
         Handle llm stream response
@@ -627,8 +639,13 @@ class GoogleLargeLanguageModel(LargeLanguageModel):
         :param credentials: credentials
         :param response: response
         :param prompt_messages: prompt messages
+        :param genai_client: genai client to keep alive during streaming
         :return: llm response chunk generator result
         """
+        # Keep a reference to the client to prevent it from being garbage collected
+        # while the generator is still active
+        _client_ref = genai_client
+
         index = -1
         self.is_thinking = False
 
@@ -893,7 +910,7 @@ class GoogleLargeLanguageModel(LargeLanguageModel):
                 model=model, contents=contents, config=config
             )
             return self._handle_generate_stream_response(
-                model, credentials, response, prompt_messages
+                model, credentials, response, prompt_messages, genai_client
             )
 
         response = genai_client.models.generate_content(

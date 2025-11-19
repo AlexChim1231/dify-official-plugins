@@ -40,6 +40,48 @@ model_credential_schema:
       placeholder:
         zh_Hans: 在此输入您的 API Key
         en_US: Enter your API Key
+    - variable: language
+      label:
+        en_US: Language
+        zh_Hans: 语言
+      type: select
+      default: zh
+      required: false
+      show_on:
+        - variable: __model_type
+          value: speech2text
+      placeholder:
+        zh_Hans: 模型支持的语言，例如 zh,en
+        en_US: The language supported by the model, e.g. zh,en
+      options:
+        - value: zh
+          label:
+            en_US: zh-Hans
+            zh_Hans: 中文
+        - value: en
+          label:
+            en_US: en-US
+            zh_Hans: 英文
+        - value: ja
+          label:
+            en_US: ja-JP
+            zh_Hans: 日语
+        - value: ko
+          label:
+            en_US: ko-KR
+            zh_Hans: 韩语
+    - variable: initial_prompt
+      label:
+        en_US: Initial Prompt
+        zh_Hans: 初始提示
+      type: text-input
+      required: false
+      show_on:
+        - variable: __model_type
+          value: speech2text
+      placeholder:
+        zh_Hans: 模型在对话开始时的初始提示
+        en_US: The initial prompt for the model at the start of the conversation.
     - variable: endpoint_url
       label:
         zh_Hans: API endpoint URL
@@ -265,6 +307,32 @@ model_credential_schema:
       help:
         en_US: "List voice names separated by commas. First voice will be used as default."
         zh_Hans: "用英文逗号分隔的声音列表。第一个声音将作为默认值。"
+    - variable: document_prefix
+      label:
+        zh_Hans: 文档前缀
+        en_US: Document prefix
+      required: false
+      show_on:
+        - variable: __model_type
+          value: text-embedding
+      type: text-input
+      default: ""
+      placeholder:
+        zh_Hans: "输入您的文档前缀, 例如 document:"
+        en_US: "Enter your Document prefix, e.g. document:"
+    - variable: query_prefix
+      label:
+        zh_Hans: 查询前缀
+        en_US: Query prefix
+      required: false
+      show_on:
+        - variable: __model_type
+          value: text-embedding
+      type: text-input
+      default: ""
+      placeholder:
+        zh_Hans: "请输入您的查询前缀, 例如 query:"
+        en_US: "Enter your Query prefix, e.g. query:"
 extra:
   python:
     provider_source: provider/openai_api_compatible.py
